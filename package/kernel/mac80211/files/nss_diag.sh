@@ -74,7 +74,7 @@ done
 echo -e "${reset}"
 echo -ne "${bold}${red}  NSS PKGS${reset}: ${white}"
 apk list 2>/dev/null | awk -v count=0 '
-  /kmod-qca-nss|^nss/ {
+  /kmod-qca|^nss/ {
   if(count>0) tab="            "
   print tab $1
   count++
