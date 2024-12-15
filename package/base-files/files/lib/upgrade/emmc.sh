@@ -34,11 +34,11 @@ emmc_upgrade_tar() {
 
 	if [ -z "$UPGRADE_BACKUP" ]; then
 		if [ "$EMMC_DATA_DEV" ]; then
-			dd if=/dev/zero of="$EMMC_DATA_DEV" bs=512 count=8
+			emmc_format_overlay "$EMMC_DATA_DEV" 0
 		elif [ "$EMMC_ROOTFS_BLOCKS" ]; then
-			dd if=/dev/zero of="$EMMC_ROOT_DEV" bs=512 seek=$EMMC_ROOTFS_BLOCKS count=8
+			emmc_format_overlay "$EMMC_ROOT_DEV" "$EMMC_ROOTFS_BLOCKS"
 		elif [ "$EMMC_KERNEL_BLOCKS" ]; then
-			dd if=/dev/zero of="$EMMC_KERN_DEV" bs=512 seek=$EMMC_KERNEL_BLOCKS count=8
+			emmc_format_overlay "$EMMC_KERN_DEV" "$EMMC_KERNEL_BLOCKS"
 		fi
 	fi
 }
@@ -56,11 +56,11 @@ emmc_upgrade_fit() {
 
 emmc_copy_config() {
 	if [ "$EMMC_DATA_DEV" ]; then
-		dd if="$UPGRADE_BACKUP" of="$EMMC_DATA_DEV" bs=512
+		emmc_format_overlay "$EMMC_DATA_DEV" 0
 	elif [ "$EMMC_ROOTFS_BLOCKS" ]; then
-		dd if="$UPGRADE_BACKUP" of="$EMMC_ROOT_DEV" bs=512 seek=$EMMC_ROOTFS_BLOCKS
+		emmc_format_overlay "$EMMC_ROOT_DEV" "$EMMC_ROOTFS_BLOCKS"
 	elif [ "$EMMC_KERNEL_BLOCKS" ]; then
-		dd if="$UPGRADE_BACKUP" of="$EMMC_KERN_DEV" bs=512 seek=$EMMC_KERNEL_BLOCKS
+		emmc_format_overlay "$EMMC_KERN_DEV" "$EMMC_KERNEL_BLOCKS"
 	fi
 }
 
@@ -71,4 +71,32 @@ emmc_do_upgrade() {
 		"fit")  emmc_upgrade_fit $1;;
 		*)      emmc_upgrade_tar $1;;
 	esac
+}
+
+emmc_format_overlay() {
+  local FORMAT_DEV=$1
+  local OFFSET_BLOCKS=$2
+  # keep sure its unbound
+	losetup --detach-all || {
+		echo Failed to detach all loop devices. Skip this try.
+		reboot -f
+	}
+	local LOOPDEV="$(losetup -f)"
+	losetup -o $(($OFFSET_BLOCKS*512)) $LOOPDEV $FORMAT_DEV || {
+		echo "Failed to mount looped rootfs_data."
+		sleep 10
+		reboot -f
+	}
+  mkfs.ext4 -F -L rootfs_data $LOOPDEV
+	if [ -n "$UPGRADE_BACKUP" ]; then
+    mkdir /tmp/new_root
+	  mount -t ext4 $LOOPDEV /tmp/new_root && {
+		  echo "Saving config to rootfs_data."
+		  cp -v "$UPGRADE_BACKUP" "/tmp/new_root/$BACKUP_FILE"
+		  umount /tmp/new_root
+	  }
+  fi
+	# Cleanup
+  losetup -d $LOOPDEV >/dev/null 2>&1
+  sync
 }
