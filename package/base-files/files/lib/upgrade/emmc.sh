@@ -1,5 +1,4 @@
 # Copyright (C) 2021 OpenWrt.org
-#
 
 . /lib/functions.sh
 
@@ -29,8 +28,7 @@ emmc_upgrade_tar() {
 		sync
 	}
 
-	[ "$has_kernel" = 1 -a "$EMMC_KERN_DEV" ] &&
-		export EMMC_KERNEL_BLOCKS=$(($(tar xf "$tar_file" ${board_dir}/kernel -O | dd of="$EMMC_KERN_DEV" bs=512 2>&1 | grep "records out" | cut -d' ' -f1)))
+	[ "$has_kernel" = 1 -a "$EMMC_KERN_DEV" ] && export EMMC_KERNEL_BLOCKS=$(($(tar xf "$tar_file" ${board_dir}/kernel -O | dd of="$EMMC_KERN_DEV" bs=512 2>&1 | grep "records out" | cut -d' ' -f1)))
 
 	if [ -z "$UPGRADE_BACKUP" ]; then
 		if [ "$EMMC_DATA_DEV" ]; then
@@ -74,29 +72,33 @@ emmc_do_upgrade() {
 }
 
 emmc_format_overlay() {
-  local FORMAT_DEV=$1
-  local OFFSET_BLOCKS=$2
-  # keep sure its unbound
+	local FORMAT_DEV=$1
+	local OFFSET_BLOCKS=$2
+
+	# keep sure its unbound
 	losetup --detach-all || {
-		echo Failed to detach all loop devices. Skip this try.
+		echo "Failed to detach all loop devices. Skip this try."
 		reboot -f
 	}
+
 	local LOOPDEV="$(losetup -f)"
 	losetup -o $(($OFFSET_BLOCKS*512)) $LOOPDEV $FORMAT_DEV || {
 		echo "Failed to mount looped rootfs_data."
 		sleep 10
 		reboot -f
 	}
-  mkfs.ext4 -F -L rootfs_data $LOOPDEV
+
+	mkfs.ext4 -F -L rootfs_data $LOOPDEV
 	if [ -n "$UPGRADE_BACKUP" ]; then
-    mkdir /tmp/new_root
-	  mount -t ext4 $LOOPDEV /tmp/new_root && {
-		  echo "Saving config to rootfs_data."
-		  cp -v "$UPGRADE_BACKUP" "/tmp/new_root/$BACKUP_FILE"
-		  umount /tmp/new_root
-	  }
-  fi
+		mkdir /tmp/new_root
+		mount -t ext4 $LOOPDEV /tmp/new_root && {
+			echo "Saving config to rootfs_data."
+			cp -v "$UPGRADE_BACKUP" "/tmp/new_root/$BACKUP_FILE"
+			umount /tmp/new_root
+		}
+	fi
+
 	# Cleanup
-  losetup -d $LOOPDEV >/dev/null 2>&1
-  sync
+	losetup -d $LOOPDEV >/dev/null 2>&1
+	sync
 }
