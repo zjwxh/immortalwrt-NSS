@@ -1,6 +1,6 @@
 --- a/drivers/net/wireless/ath/ath11k/mac.c
 +++ b/drivers/net/wireless/ath/ath11k/mac.c
-@@ -5297,14 +5297,19 @@ skip_nss_ext:
+@@ -5295,14 +5295,19 @@ skip_nss_ext:
  	 * AP vif of the AP_VLAN vif
  	 */
  	ret = ath11k_wmi_vdev_set_param_cmd(ar, arvif->vdev_id,
@@ -23,7 +23,7 @@
  	return;
  
  ext_vdev_down:
-@@ -7244,6 +7249,23 @@ static int ath11k_mac_op_add_interface(s
+@@ -7242,6 +7247,23 @@ static int ath11k_mac_op_add_interface(s
  		goto err_vdev_del;
  	}
  
