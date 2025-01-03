@@ -32,21 +32,24 @@ jobs:
         run: |
           cd ./package/emortal/
           PKG_NAME=luci-app-athena-led
-          OLD_VER=$(grep -Po "PKG_VERSION:=\K.*" "./$PKG_NAME/Makefile")
-          NEW_VER=$(curl -sL "https://api.github.com/repos/NONGFAH/luci-app-athena-led/releases" | jq -r "map(select(.prerelease|not)) | first | .tag_name")
 
-          if [[ $NEW_VER =~ ^[0-9].* ]] && dpkg --compare-versions "$OLD_VER" lt "$NEW_VER"; then
+          LOCAL_HASH=$(cat "./$PKG_NAME/.latest_commit" 2>/dev/null || echo "none")
+          REMOTE_HASH=$(curl -sL https://api.github.com/repos/NONGFAH/luci-app-athena-led/commits/main | jq -r '.sha' | cut -c1-8)
+
+          if [[ "$LOCAL_HASH" != "$REMOTE_HASH" ]]; then
             rm -rf ./$PKG_NAME
             curl -sL -o ./athena-led.zip https://github.com/NONGFAH/luci-app-athena-led/archive/refs/heads/main.zip
             unzip ./athena-led.zip -d ./
             mv ./luci-app-athena-led-main ./$PKG_NAME && rm -rf ./athena-led.zip
             chmod +x -R ./$PKG_NAME/root/usr/sbin/* && chmod +x -R ./$PKG_NAME/root/etc/init.d/*
 
-            echo "$PKG_NAME version has been updated!"
+            echo "$PKG_NAME has been updated to $REMOTE_HASH!"
+
+            echo "$REMOTE_HASH" > "./$PKG_NAME/.latest_commit"
             echo "PKG_NAME=$PKG_NAME" >> "$GITHUB_ENV"
-            echo "NEW_VER=$NEW_VER" >> "$GITHUB_ENV"
+            echo "REMOTE_HASH=$REMOTE_HASH" >> "$GITHUB_ENV"
           else
-            echo "$PKG_NAME version is already the latest!"
+            echo "$PKG_NAME is already the latest!"
           fi
 
           [ -z "$(git status -s)" ] || echo -e "CHANGE_STAT=1" >> "$GITHUB_ENV"
@@ -57,5 +60,5 @@ jobs:
           git config --local user.name "github-actions[bot]"
           git config --local user.email "<github-actions[bot]@users.noreply.github.com>"
           git add .
-          git commit -m "${{env.PKG_NAME}}: update version to ${{env.NEW_VER}}"
+          git commit -m "${{env.PKG_NAME}}: update version to ${{env.REMOTE_HASH}}"
           git push -f origin HEAD:main
