@@ -72,7 +72,7 @@ define Device/tplink_eap610-outdoor
 	DEVICE_MODEL := EAP610-Outdoor
 	BLOCKSIZE := 128k
 	PAGESIZE := 2048
-	SOC := ipq6018
+	SOC := ipq6000
 	DEVICE_PACKAGES := ipq-wifi-tplink_eap610-outdoor
 	IMAGES += web-ui-factory.bin
 	IMAGE/web-ui-factory.bin := append-ubi | tplink-image-2022

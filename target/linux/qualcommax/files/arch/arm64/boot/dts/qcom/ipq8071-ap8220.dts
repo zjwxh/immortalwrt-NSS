@@ -53,57 +53,57 @@
 			#size-cells = <1>;
 
 			partition@0 {
-				label = "0:SBL1";
+				label = "0:sbl1";
 				reg = <0x00 0x50000>;
 			};
 
 			partition@50000 {
-				label = "0:MIBIB";
+				label = "0:mibib";
 				reg = <0x50000 0x10000>;
 			};
 
 			partition@60000 {
-				label = "0:QSEE";
+				label = "0:qsee";
 				reg = <0x60000 0x180000>;
 			};
 
 			partition@1e0000 {
-				label = "0:DEVCFG";
+				label = "0:devcfg";
 				reg = <0x1e0000 0x10000>;
 			};
 
 			partition@1f0000 {
-				label = "0:APDP";
+				label = "0:apdp";
 				reg = <0x1f0000 0x10000>;
 			};
 
 			partition@200000 {
-				label = "0:RPM";
+				label = "0:rpm";
 				reg = <0x200000 0x40000>;
 			};
 
 			partition@240000 {
-				label = "0:CDT";
+				label = "0:cdt";
 				reg = <0x240000 0x10000>;
 			};
 
 			partition@250000 {
-				label = "0:APPSBLENV";
+				label = "0:appsblenv";
 				reg = <0x250000 0x10000>;
 			};
 
 			partition@260000 {
-				label = "0:APPSBL";
+				label = "0:appsbl";
 				reg = <0x260000 0xa0000>;
 			};
 
 			partition@300000 {
-				label = "0:ART";
+				label = "0:art";
 				reg = <0x300000 0x40000>;
 			};
 
 			partition@340000 {
-				label = "0:ETHPHYFW";
+				label = "0:ethphyfw";
 				reg = <0x340000 0x80000>;
 			};
 
@@ -122,15 +122,6 @@
 				reg = <0x3f0000 0x10000>;
 			};
 		};
-	};
-};
-
-&mdio {
-	qca8081_24: ethernet-phy@24 {
-		compatible = "ethernet-phy-id004d.d101";
-		reg = <24>;
-		reset-deassert-us = <10000>;
-		reset-gpios = <&tlmm 25 GPIO_ACTIVE_LOW>;
 	};
 };
 

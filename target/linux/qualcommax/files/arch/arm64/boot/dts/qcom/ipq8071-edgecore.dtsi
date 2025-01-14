@@ -58,6 +58,15 @@
 			bias-pull-up;
 		};
 	};
+
+	usb_mux_sel_pins: usb-mux-sel-pins {
+		mux {
+			pins = "gpio27";
+			function = "gpio";
+			drive-strength = <8>;
+			bias-pull-down;
+		};
+	};
 };
 
 &mdio {
@@ -65,7 +74,6 @@
 
 	pinctrl-0 = <&mdio_pins>;
 	pinctrl-names = "default";
-	reset-gpios = <&tlmm 75 GPIO_ACTIVE_LOW>;
 
 	qca8081_24: ethernet-phy@24 {
 		compatible = "ethernet-phy-id004d.d101";
